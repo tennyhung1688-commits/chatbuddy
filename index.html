@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp 聊天助手 — AI 驱动的智能聊天伴侣</title>
+  <meta name="description" content="WhatsApp + LINE 双平台 AI 自动聊天助手。真人般自然回复，时间感知，情绪模拟，多语言支持。让 AI 帮你轻松聊天。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans SC', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              300: '#86efac',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            },
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    * { scroll-behavior: smooth; }
+    .gradient-hero {
+      background: radial-gradient(ellipse 80% 80% at 50% -20%, rgba(34,197,94,0.15), transparent),
+                  radial-gradient(ellipse 60% 50% at 80% 50%, rgba(34,197,94,0.08), transparent),
+                  linear-gradient(180deg, #fafafa 0%, #ffffff 100%);
+    }
+    .glass-card {
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .chat-bubble-right {
+      background: #dcf8c6;
+      border-radius: 12px 12px 4px 12px;
+    }
+    .chat-bubble-left {
+      background: #ffffff;
+      border-radius: 12px 12px 12px 4px;
+      border: 1px solid #e5e7eb;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+    }
+    .pricing-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary { list-style: none; }
+    /* Contact Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal-box { background: white; border-radius: 1.5rem; padding: 2.5rem; max-width: 420px; width: 90%; text-align: center; position: relative; animation: modalIn 0.3s ease-out; }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .modal-close { position: absolute; top: 1rem; right: 1rem; width: 32px; height: 32px; border-radius: 50%; border: none; background: #f3f4f6; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .modal-close:hover { background: #e5e7eb; }
+    .contact-card { background: #f9fafb; border: 1px solid #f3f4f6; border-radius: 1rem; padding: 1rem; margin: 0.75rem 0; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: all 0.2s; }
+    .contact-card:hover { border-color: #22c55e; background: #f0fdf4; transform: translateX(4px); }
+    .contact-card .icon-box { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .contact-card .icon-box.telegram { background: #e8f4fd; color: #0088cc; }
+    .contact-card .icon-box.whatsapp { background: #dcfce7; color: #25D366; }
+    .contact-card .icon-box.wechat { background: #dcfce7; color: #07C160; }
+    .contact-card .icon-box.email { background: #fef3c7; color: #f59e0b; }
+    .copy-toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 0.75rem 1.5rem; border-radius: 2rem; font-size: 14px; z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .copy-toast.show { opacity: 1; }
+  </style>
+</head>
+<body class="font-sans text-gray-900 antialiased">
+
+  <!-- ============ NAV ============ -->
+  <nav class="fixed top-0 w-full z-50 glass-card">
+    <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center">
+          <i data-lucide="message-circle" class="w-5 h-5 text-white"></i>
+        </div>
+        <span class="font-bold text-lg">ChatBuddy</span>
+      </div>
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
+        <a href="#features" class="hover:text-brand-600 transition-colors">功能</a>
+        <a href="#how-it-works" class="hover:text-brand-600 transition-colors">使用流程</a>
+        <a href="#pricing" class="hover:text-brand-600 transition-colors">定价</a>
+        <a href="#faq" class="hover:text-brand-600 transition-colors">常见问题</a>
+      </div>
+      <a href="#" class="btn-buy bg-brand-500 hover:bg-brand-600 text-white px-5 py-2 rounded-full text-sm font-semibold transition-all shadow-lg shadow-brand-200 hover:shadow-brand-300">
+        立即购买
+      </a>
+    </div>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <section class="gradient-hero pt-32 pb-20 px-6">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 bg-brand-50 border border-brand-200 rounded-full px-4 py-1.5 text-sm text-brand-700 font-medium mb-8">
+        <span class="w-2 h-2 bg-brand-500 rounded-full animate-pulse"></span>
+        支持 WhatsApp + LINE 双平台
+      </div>
+      <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight mb-6">
+        让 AI 帮你<br class="md:hidden">
+        <span class="text-brand-600">轻松聊天</span>
+      </h1>
+      <p class="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
+        不再为回复而烦恼。ChatBuddy 用 AI 模拟真人聊天风格，<br class="hidden md:block">
+        自动回复 WhatsApp 和 LINE 消息，温柔、自然、有温度。
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+        <a href="#" class="btn-buy bg-brand-500 hover:bg-brand-600 text-white px-8 py-3.5 rounded-full text-lg font-semibold transition-all shadow-xl shadow-brand-200 hover:shadow-brand-300 flex items-center gap-2">
+          立即购买
+          <i data-lucide="arrow-right" class="w-5 h-5"></i>
+        </a>
+        <a href="#demo" class="text-gray-600 hover:text-gray-900 px-8 py-3.5 rounded-full text-lg font-medium transition-colors flex items-center gap-2 border border-gray-200 hover:border-gray-300">
+          <i data-lucide="play" class="w-5 h-5"></i>
+          查看演示
+        </a>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto">
+        <div>
+          <div class="text-3xl font-bold text-brand-600">24/7</div>
+          <div class="text-sm text-gray-500 mt-1">全天候在线</div>
+        </div>
+        <div>
+          <div class="text-3xl font-bold text-brand-600">3+</div>
+          <div class="text-sm text-gray-500 mt-1">支持语言</div>
+        </div>
+        <div>
+          <div class="text-3xl font-bold text-brand-600">99%</div>
+          <div class="text-sm text-gray-500 mt-1">回复准确率</div>
+        </div>
+        <div>
+          <div class="text-3xl font-bold text-brand-600">2</div>
+          <div class="text-sm text-gray-500 mt-1">平台支持</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURES ============ -->
+  <section id="features" class="py-24 px-6 bg-white">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">核心功能</h2>
+        <p class="text-gray-500 text-lg max-w-xl mx-auto">不是简单的自动回复，而是真正「像人」的 AI 聊天体验</p>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Feature 1 -->
+        <div class="feature-card bg-white border border-gray-100 rounded-2xl p-6 transition-all duration-300">
+          <div class="w-12 h-12 bg-brand-50 rounded-xl flex items-center justify-center mb-4">
+            <i data-lucide="brain" class="w-6 h-6 text-brand-600"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">AI 智能回复</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">基于大语言模型，理解对话上下文，生成自然流畅的回复。不是模板，是真的在聊天。</p>
+        </div>
+        <!-- Feature 2 -->
+        <div class="feature-card bg-white border border-gray-100 rounded-2xl p-6 transition-all duration-300">
+          <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-4">
+            <i data-lucide="clock" class="w-6 h-6 text-amber-600"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">时间感知</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">根据当前时间自动调整聊天风格。早上说早安，晚上聊放松话题，不会在上午问你"还没睡"。</p>
+        </div>
+        <!-- Feature 3 -->
+        <div class="feature-card bg-white border border-gray-100 rounded-2xl p-6 transition-all duration-300">
+          <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mb-4">
+            <i data-lucide="sparkles" class="w-6 h-6 text-purple-600"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">真人行为模拟</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">随机回复延迟、偶尔不回复、情绪波动、主动分享生活。对方完全感觉不到是 AI。</p>
+        </div>
+        <!-- Feature 4 -->
+        <div class="feature-card bg-white border border-gray-100 rounded-2xl p-6 transition-all duration-300">
+          <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4">
+            <i data-lucide="languages" class="w-6 h-6 text-blue-600"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">多语言自动切换</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">支持中文、英文、日文。自动检测对方语言并用相同语言回复。日文回复带日本人聊天风格。</p>
+        </div>
+        <!-- Feature 5 -->
+        <div class="feature-card bg-white border border-gray-100 rounded-2xl p-6 transition-all duration-300">
+          <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center mb-4">
+            <i data-lucide="shield-check" class="w-6 h-6 text-red-600"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">一机一码安全</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">每个激活码绑定一台设备，防止盗用。云端验证 + 本地缓存双重保障。</p>
+        </div>
+        <!-- Feature 6 -->
+        <div class="feature-card bg-white border border-gray-100 rounded-2xl p-6 transition-all duration-300">
+          <div class="w-12 h-12 bg-teal-50 rounded-xl flex items-center justify-center mb-4">
+            <i data-lucide="refresh-cw" class="w-6 h-6 text-teal-600"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">热更新免重装</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">AI 行为规则云端同步，无需重新安装。我们持续优化，你的体验自动升级。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <section id="how-it-works" class="py-24 px-6 bg-gray-50">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">三步开始</h2>
+      <p class="text-gray-500 text-lg mb-16">从下载到自动回复，只需几分钟</p>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="relative">
+          <div class="w-16 h-16 bg-brand-500 text-white rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-4 shadow-lg shadow-brand-200">1</div>
+          <h3 class="font-semibold text-lg mb-2">下载安装</h3>
+          <p class="text-gray-500 text-sm">下载安装包，一键安装。支持 Windows 系统。</p>
+          <div class="hidden md:block absolute top-8 -right-4 text-gray-300">
+            <i data-lucide="arrow-right" class="w-6 h-6"></i>
+          </div>
+        </div>
+        <div class="relative">
+          <div class="w-16 h-16 bg-brand-500 text-white rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-4 shadow-lg shadow-brand-200">2</div>
+          <h3 class="font-semibold text-lg mb-2">扫码登录</h3>
+          <p class="text-gray-500 text-sm">打开 WhatsApp 扫码绑定，LINE 同样支持。一次配置，一直在线。</p>
+          <div class="hidden md:block absolute top-8 -right-4 text-gray-300">
+            <i data-lucide="arrow-right" class="w-6 h-6"></i>
+          </div>
+        </div>
+        <div>
+          <div class="w-16 h-16 bg-brand-500 text-white rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-4 shadow-lg shadow-brand-200">3</div>
+          <h3 class="font-semibold text-lg mb-2">AI 自动聊天</h3>
+          <p class="text-gray-500 text-sm">别人发消息，AI 自动回复。你可以设置人物性格和聊天风格。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section id="demo" class="py-24 px-6 bg-white">
+    <div class="max-w-2xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">实际效果演示</h2>
+        <p class="text-gray-500 text-lg">看看 AI 是怎么聊天的</p>
+      </div>
+      <!-- Simulated WhatsApp Chat -->
+      <div class="bg-[#e5ddd5] rounded-2xl p-4 shadow-xl">
+        <div class="bg-[#075e54] text-white px-4 py-2 rounded-t-xl flex items-center gap-3">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+          <div class="w-10 h-10 bg-gray-400 rounded-full"></div>
+          <div>
+            <div class="font-medium text-sm">小美</div>
+            <div class="text-xs text-green-200">在线</div>
+          </div>
+        </div>
+        <div class="p-4 space-y-3 min-h-[400px]">
+          <!-- Message from contact -->
+          <div class="flex justify-start">
+            <div class="chat-bubble-left px-3 py-2 max-w-[75%] text-sm">
+              早上好呀～今天天气好好
+            </div>
+          </div>
+          <!-- AI reply -->
+          <div class="flex justify-end">
+            <div class="chat-bubble-right px-3 py-2 max-w-[75%] text-sm">
+              早安！是啊，今天太阳好大，适合出去走走😊 你今天有什么计划？
+            </div>
+          </div>
+          <!-- Contact -->
+          <div class="flex justify-start">
+            <div class="chat-bubble-left px-3 py-2 max-w-[75%] text-sm">
+              想去海边，但还没决定
+            </div>
+          </div>
+          <!-- AI reply - longer -->
+          <div class="flex justify-end">
+            <div class="chat-bubble-right px-3 py-2 max-w-[75%] text-sm">
+              海边不错诶！这个天气去海边刚刚好，不会太晒。我上次去圣淘沙那边，人不多挺舒服的。你要去的话记得涂防晒～
+            </div>
+          </div>
+          <!-- Contact -->
+          <div class="flex justify-start">
+            <div class="chat-bubble-left px-3 py-2 max-w-[75%] text-sm">
+              哈哈好，一起去吗？
+            </div>
+          </div>
+          <!-- AI reply - short -->
+          <div class="flex justify-end">
+            <div class="chat-bubble-right px-3 py-2 max-w-[75%] text-sm">
+              可以啊！周末吧
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-b-xl p-3 flex items-center gap-2">
+          <i data-lucide="smile" class="w-5 h-5 text-gray-400"></i>
+          <input type="text" disabled placeholder="输入消息..." class="flex-1 text-sm text-gray-400 bg-transparent outline-none">
+          <i data-lucide="send" class="w-5 h-5 text-brand-500"></i>
+        </div>
+      </div>
+      <p class="text-center text-sm text-gray-400 mt-4">* 以上为 WhatsApp 平台的演示效果。回复风格可根据设置调整。</p>
+    </div>
+  </section>
+
+  <!-- ============ PRICING ============ -->
+  <section id="pricing" class="py-24 px-6 bg-gray-50">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">简单定价</h2>
+        <p class="text-gray-500 text-lg">一次购买，长期使用。包含 WhatsApp + LINE 双平台。</p>
+      </div>
+      <div class="grid md:grid-cols-4 gap-6">
+        <!-- 3 months -->
+        <div class="pricing-card bg-white border border-gray-100 rounded-2xl p-6 text-center transition-all duration-300">
+          <div class="text-sm font-semibold text-brand-600 mb-2">入门体验</div>
+          <div class="text-4xl font-bold mb-1">¥99</div>
+          <div class="text-sm text-gray-500 mb-6">/ 3个月</div>
+          <ul class="text-sm text-gray-600 space-y-2 mb-8 text-left">
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>WhatsApp 自动回复</li>
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>LINE 自动回复</li>
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>双人物设定</li>
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>热更新支持</li>
+          </ul>
+          <a href="#" class="btn-buy block w-full bg-white border-2 border-brand-500 text-brand-600 hover:bg-brand-50 py-2.5 rounded-full text-sm font-semibold transition-colors">
+            选择方案
+          </a>
+        </div>
+        <!-- 6 months -->
+        <div class="pricing-card bg-white border border-gray-100 rounded-2xl p-6 text-center transition-all duration-300">
+          <div class="text-sm font-semibold text-brand-600 mb-2">热门推荐</div>
+          <div class="text-4xl font-bold mb-1">¥159</div>
+          <div class="text-sm text-gray-500 mb-6">/ 6个月</div>
+          <ul class="text-sm text-gray-600 space-y-2 mb-8 text-left">
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>WhatsApp 自动回复</li>
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>LINE 自动回复</li>
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>双人物设定</li>
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>热更新支持</li>
+          </ul>
+          <a href="#" class="btn-buy block w-full bg-brand-500 hover:bg-brand-600 text-white py-2.5 rounded-full text-sm font-semibold transition-all shadow-lg shadow-brand-200">
+            选择方案
+          </a>
+        </div>
+        <!-- 1 year -->
+        <div class="pricing-card bg-white border border-gray-100 rounded-2xl p-6 text-center transition-all duration-300">
+          <div class="text-sm font-semibold text-brand-600 mb-2">超值年费</div>
+          <div class="text-4xl font-bold mb-1">¥259</div>
+          <div class="text-sm text-gray-500 mb-6">/ 1年</div>
+          <ul class="text-sm text-gray-600 space-y-2 mb-8 text-left">
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>WhatsApp 自动回复</li>
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>LINE 自动回复</li>
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>双人物设定</li>
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>热更新支持</li>
+          </ul>
+          <a href="#" class="btn-buy block w-full bg-white border-2 border-brand-500 text-brand-600 hover:bg-brand-50 py-2.5 rounded-full text-sm font-semibold transition-colors">
+            选择方案
+          </a>
+        </div>
+        <!-- Forever -->
+        <div class="pricing-card bg-white border-2 border-brand-200 rounded-2xl p-6 text-center transition-all duration-300 relative overflow-hidden">
+          <div class="absolute top-0 right-0 bg-brand-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">最划算</div>
+          <div class="text-sm font-semibold text-brand-600 mb-2">永久买断</div>
+          <div class="text-4xl font-bold mb-1">¥399</div>
+          <div class="text-sm text-gray-500 mb-6">永久使用</div>
+          <ul class="text-sm text-gray-600 space-y-2 mb-8 text-left">
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>WhatsApp 自动回复</li>
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>LINE 自动回复</li>
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>双人物设定</li>
+            <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-500 mt-0.5 shrink-0"></i>热更新支持</li>
+          </ul>
+          <a href="#" class="btn-buy block w-full bg-brand-500 hover:bg-brand-600 text-white py-2.5 rounded-full text-sm font-semibold transition-all shadow-lg shadow-brand-200">
+            选择方案
+          </a>
+        </div>
+      </div>
+      <p class="text-center text-sm text-gray-400 mt-6">* 所有方案包含 1 天免费试用。购买后联系客服获取激活码。</p>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section id="faq" class="py-24 px-6 bg-white">
+    <div class="max-w-2xl mx-auto">
+      <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">常见问题</h2>
+      <div class="space-y-3">
+        <details class="faq-item bg-gray-50 rounded-xl p-5 group">
+          <summary class="flex items-center justify-between cursor-pointer font-medium">
+            需要一直开着电脑吗？
+            <i data-lucide="chevron-down" class="w-5 h-5 transition-transform group-open:rotate-180"></i>
+          </summary>
+          <p class="text-gray-500 text-sm mt-3 leading-relaxed">是的，ChatBuddy 是桌面软件，需要在 Windows 电脑上运行。但可以最小化到系统托盘，后台静默运行。</p>
+        </details>
+        <details class="faq-item bg-gray-50 rounded-xl p-5 group">
+          <summary class="flex items-center justify-between cursor-pointer font-medium">
+            WhatsApp 会不会封号？
+            <i data-lucide="chevron-down" class="w-5 h-5 transition-transform group-open:rotate-180"></i>
+          </summary>
+          <p class="text-gray-500 text-sm mt-3 leading-relaxed">我们使用 WhatsApp Web 协议，模拟真人操作节奏（回复延迟、偶尔不回复等），大大降低风险。但任何第三方工具都有一定风险，建议用小号使用。</p>
+        </details>
+        <details class="faq-item bg-gray-50 rounded-xl p-5 group">
+          <summary class="flex items-center justify-between cursor-pointer font-medium">
+            可以自定义人物设定吗？
+            <i data-lucide="chevron-down" class="w-5 h-5 transition-transform group-open:rotate-180"></i>
+          </summary>
+          <p class="text-gray-500 text-sm mt-3 leading-relaxed">可以！在设置面板中可以配置名字、年龄、性格、职业、兴趣爱好等。WhatsApp 和 LINE 可以分别设置不同的人物。</p>
+        </details>
+        <details class="faq-item bg-gray-50 rounded-xl p-5 group">
+          <summary class="flex items-center justify-between cursor-pointer font-medium">
+            支持 Mac 吗？
+            <i data-lucide="chevron-down" class="w-5 h-5 transition-transform group-open:rotate-180"></i>
+          </summary>
+          <p class="text-gray-500 text-sm mt-3 leading-relaxed">目前仅支持 Windows。Mac 版本正在开发中，敬请期待。</p>
+        </details>
+        <details class="faq-item bg-gray-50 rounded-xl p-5 group">
+          <summary class="flex items-center justify-between cursor-pointer font-medium">
+            购买后怎么获取激活码？
+            <i data-lucide="chevron-down" class="w-5 h-5 transition-transform group-open:rotate-180"></i>
+          </summary>
+          <p class="text-gray-500 text-sm mt-3 leading-relaxed">购买后请联系客服 Telegram/WhatsApp/邮件，我们会在 24 小时内发送激活码。激活码一机一码，绑定你的电脑。</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <section class="py-24 px-6 bg-gray-50">
+    <div class="max-w-2xl mx-auto text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">准备好让 AI 帮你聊天了吗？</h2>
+      <p class="text-gray-500 text-lg mb-8">1 天免费试用，满意再购买。</p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#" class="btn-buy bg-brand-500 hover:bg-brand-600 text-white px-8 py-3.5 rounded-full text-lg font-semibold transition-all shadow-xl shadow-brand-200 hover:shadow-brand-300 flex items-center gap-2">
+          立即购买
+          <i data-lucide="arrow-right" class="w-5 h-5"></i>
+        </a>
+        <a href="#" class="btn-buy text-gray-600 hover:text-gray-900 px-8 py-3.5 rounded-full text-lg font-medium transition-colors flex items-center gap-2 border border-gray-200 hover:border-gray-300">
+          <i data-lucide="message-circle" class="w-5 h-5"></i>
+          联系客服
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="py-12 px-6 bg-white border-t border-gray-100">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 bg-brand-500 rounded-lg flex items-center justify-center">
+          <i data-lucide="message-circle" class="w-4 h-4 text-white"></i>
+        </div>
+        <span class="font-semibold">ChatBuddy</span>
+      </div>
+      <p class="text-sm text-gray-400">© 2026 ChatBuddy. All rights reserved.</p>
+      <div class="flex items-center gap-6 text-sm text-gray-500">
+        <a href="#" class="hover:text-gray-900 transition-colors">隐私政策</a>
+        <a href="#" class="hover:text-gray-900 transition-colors">使用条款</a>
+        <a href="#" class="hover:text-gray-900 transition-colors">联系我们</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ CONTACT MODAL ============ -->
+  <div class="modal-overlay" id="contactModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <div class="w-14 h-14 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="shopping-cart" class="w-7 h-7 text-brand-600"></i>
+      </div>
+      <h3 class="text-xl font-bold mb-2">购买 ChatBuddy</h3>
+      <p class="text-gray-500 text-sm mb-6">通过以下方式联系我们获取激活码<br>付款后 24 小时内发送激活码</p>
+      
+      <div class="contact-card" onclick="copyText('Telegram', '@yeshou668')">
+        <div class="icon-box telegram">✈️</div>
+        <div class="text-left flex-1">
+          <div class="font-semibold text-sm">Telegram</div>
+          <div class="text-gray-500 text-xs">@yeshou668</div>
+        </div>
+        <i data-lucide="copy" class="w-4 h-4 text-gray-400"></i>
+      </div>
+
+      <div class="contact-card" onclick="copyText('WhatsApp', '+85246603801')">
+        <div class="icon-box whatsapp">📱</div>
+        <div class="text-left flex-1">
+          <div class="font-semibold text-sm">WhatsApp</div>
+          <div class="text-gray-500 text-xs">+852 46603801</div>
+        </div>
+        <i data-lucide="copy" class="w-4 h-4 text-gray-400"></i>
+      </div>
+
+      <div class="contact-card" onclick="copyText('Email', 'aibotsupport@gmail.com')">
+        <div class="icon-box email">📧</div>
+        <div class="text-left flex-1">
+          <div class="font-semibold text-sm">邮件</div>
+          <div class="text-gray-500 text-xs">aibotsupport@gmail.com</div>
+        </div>
+        <i data-lucide="copy" class="w-4 h-4 text-gray-400"></i>
+      </div>
+
+      <p class="text-xs text-gray-400 mt-4">点击任意方式即可复制到剪贴板</p>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="copy-toast" id="toast"></div>
+
+  <script>
+    lucide.createIcons();
+
+    function openModal() {
+      document.getElementById('contactModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal() {
+      document.getElementById('contactModal').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    document.getElementById('contactModal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    function copyText(label, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('toast');
+        toast.textContent = '✅ ' + label + ' 已复制：' + text;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+      }).catch(() => {
+        const toast = document.getElementById('toast');
+        toast.textContent = '⚠️ 请手动复制：' + text;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+      });
+    }
+
+    // Bind all buy buttons to open modal
+    document.querySelectorAll('.btn-buy, a[href="#pricing"]').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        openModal();
+      });
+    });
+  </script>
+</body>
+</html>
