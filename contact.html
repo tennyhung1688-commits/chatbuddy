@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>联系我们 - ChatBuddy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    body { font-family: 'Inter', 'Noto Sans SC', system-ui, sans-serif; }
+    .contact-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 1rem; padding: 1.5rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: all 0.2s; }
+    .contact-card:hover { border-color: #22c55e; background: #f0fdf4; transform: translateX(4px); }
+    .copy-toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 0.75rem 1.5rem; border-radius: 2rem; font-size: 14px; z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .copy-toast.show { opacity: 1; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-700">
+  <div class="max-w-2xl mx-auto px-6 py-16">
+    <a href="index.html" class="text-brand-600 hover:underline mb-8 inline-block">&larr; 返回首页</a>
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">联系我们</h1>
+    <p class="text-gray-500 mb-8">选择以下任一方式联系我们，我们会在 24 小时内回复。</p>
+
+    <div class="space-y-4 mb-8">
+      <div class="contact-card" onclick="copyToClipboard('@yeshou668')">
+        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-2xl">✈️</div>
+        <div class="flex-1">
+          <div class="font-semibold text-gray-900">Telegram</div>
+          <div class="text-gray-500">@yeshou668</div>
+        </div>
+        <i data-lucide="copy" class="w-5 h-5 text-gray-400"></i>
+      </div>
+
+      <div class="contact-card" onclick="copyToClipboard('+852 46603801')">
+        <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-2xl">📱</div>
+        <div class="flex-1">
+          <div class="font-semibold text-gray-900">WhatsApp</div>
+          <div class="text-gray-500">+852 46603801</div>
+        </div>
+        <i data-lucide="copy" class="w-5 h-5 text-gray-400"></i>
+      </div>
+
+      <div class="contact-card" onclick="copyToClipboard('aibotsupport@gmail.com')">
+        <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-2xl">📧</div>
+        <div class="flex-1">
+          <div class="font-semibold text-gray-900">邮件</div>
+          <div class="text-gray-500">aibotsupport@gmail.com</div>
+        </div>
+        <i data-lucide="copy" class="w-5 h-5 text-gray-400"></i>
+      </div>
+    </div>
+
+    <div class="bg-white border rounded-xl p-6">
+      <h2 class="font-semibold text-gray-900 mb-3">常见问题</h2>
+      <ul class="space-y-3 text-sm">
+        <li><strong>购买咨询：</strong>请提供您想购买的方案，我们会尽快发送付款方式和激活码。</li>
+        <li><strong>激活问题：</strong>请提供您的设备码（软件设置页面可查看），我们会协助处理。</li>
+        <li><strong>功能建议：</strong>欢迎提出任何改进建议，我们会认真考虑。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="copy-toast" id="toast"></div>
+
+  <script>
+    lucide.createIcons();
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('toast');
+        toast.textContent = '✅ 已复制：' + text;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+      });
+    }
+  </script>
+</body>
+</html>
