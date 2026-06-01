@@ -36,13 +36,13 @@
 
       <section>
         <h2 class="text-xl font-semibold text-gray-900 mb-3">3. AI 对话处理</h2>
-        <p>AI 回复通过 DeepSeek API 生成。发送给 API 的内容包括：</p>
+        <p>AI 回复通过网络模型生成。发送给模型的内容包括：</p>
         <ul class="list-disc list-inside mt-2 space-y-1">
           <li>当前收到的消息内容</li>
-          <li>最近 10 条对话历史（用于上下文理解）</li>
+          <li>最近 30 条对话历史（用于上下文理解）</li>
           <li>系统提示词（人物设定、时间场景等）</li>
         </ul>
-        <p class="mt-2">DeepSeek 不会永久存储对话数据，具体请参考 <a href="https://www.deepseek.com" class="text-brand-600 hover:underline" target="_blank">DeepSeek 隐私政策</a>。</p>
+        <p class="mt-2">对话数据仅用于实时生成回复，不会永久存储。</p>
       </section>
 
       <section>
